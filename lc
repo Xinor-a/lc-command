@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# lc.sh - line-copy: select lines from piped input and copy to clipboard
+# Usage: some_command | lc.sh
+#   ↑/↓  : navigate
+#   Enter : toggle select/deselect
+#   d     : done — copy selected lines to clipboard
+#   q     : quit without copying
+
+set -euo pipefail
+
+# --- Read stdin into array ---
+if [ -t 0 ]; then
+  echo "Usage: command | lc.sh" >&2
+  exit 1
+fi
+
+lines=()
+while IFS= read -r line; do
+  lines+=("$line")
+done
+exec < /dev/tty  # reconnect stdin to terminal for interactive input
+
+if [ ${#lines[@]} -eq 0 ]; then
+  echo "No input." >&2
+  exit 1
+fi
+
+# --- Clipboard helper ---
+copy_to_clipboard() {
+  if command -v pbcopy &>/dev/null; then
+    printf '%s' "$1" | pbcopy
+  elif command -v wl-copy &>/dev/null; then
+    printf '%s' "$1" | wl-copy
+    printf '%s' "$1" | wl-copy --primary
+  elif command -v xclip &>/dev/null; then
+    printf '%s' "$1" | xclip -selection clipboard
+    printf '%s' "$1" | xclip -selection primary
+  elif command -v xsel &>/dev/null; then
+    printf '%s' "$1" | xsel --clipboard --input
+    printf '%s' "$1" | xsel --primary --input
+  else
+    echo "No clipboard tool found (pbcopy/wl-copy/xclip/xsel)." >&2
+    return 1
+  fi
+}
+
+# --- TUI state ---
+cursor=0
+total=${#lines[@]}
+selected_order=()           # indices in selection order
+declare -A is_selected=()   # map: index -> 1
+
+# --- Drawing ---
+draw() {
+  # Move to top and redraw
+  printf '\e[%dA' "$total"  # move up
+  for i in "${!lines[@]}"; do
+    local marker="  "
+    if [[ -n "${is_selected[$i]:-}" ]]; then
+      marker=$(printf '\e[32m✔\e[0m ')  # green check
+    fi
+    if [ "$i" -eq "$cursor" ]; then
+      printf '\e[2K\e[7m %s %s \e[0m\n' "$marker" "${lines[$i]}"
+    else
+      printf '\e[2K %s %s\n' "$marker" "${lines[$i]}"
+    fi
+  done
+}
+
+initial_draw() {
+  for i in "${!lines[@]}"; do
+    local marker="  "
+    if [ "$i" -eq "$cursor" ]; then
+      printf '\e[7m %s %s \e[0m\n' "$marker" "${lines[$i]}"
+    else
+      printf ' %s %s\n' "$marker" "${lines[$i]}"
+    fi
+  done
+}
+
+# --- Toggle selection ---
+toggle() {
+  local idx=$1
+  if [[ -n "${is_selected[$idx]:-}" ]]; then
+    unset "is_selected[$idx]"
+    # remove from selected_order
+    local new_order=()
+    for s in "${selected_order[@]}"; do
+      [ "$s" -ne "$idx" ] && new_order+=("$s")
+    done
+    selected_order=("${new_order[@]}")
+  else
+    is_selected[$idx]=1
+    selected_order+=("$idx")
+  fi
+}
+
+# --- Main loop ---
+printf '\e[?25l'  # hide cursor
+trap 'printf "\e[?25h"' EXIT  # restore cursor on exit
+
+initial_draw
+
+while true; do
+  IFS= read -rsn1 key
+  case "$key" in
+    $'\x1b')  # escape sequence
+      read -rsn2 seq
+      case "$seq" in
+        '[A') ((cursor > 0)) && ((cursor--)) ;;          # up
+        '[B') ((cursor < total - 1)) && ((cursor++)) ;;  # down
+      esac
+      ;;
+    '')  # Enter
+      toggle "$cursor"
+      ;;
+    d|D)  # done
+      break
+      ;;
+    q|Q)  # quit
+      printf '\e[?25h'
+      echo "Cancelled." >&2
+      exit 0
+      ;;
+  esac
+  draw
+done
+
+printf '\e[?25h'  # show cursor
+
+# --- Build result and copy ---
+if [ ${#selected_order[@]} -eq 0 ]; then
+  echo "Nothing selected." >&2
+  exit 0
+fi
+
+result_parts=()
+for idx in "${selected_order[@]}"; do
+  result_parts+=("${lines[$idx]}")
+done
+
+result=$(IFS=' '; echo "${result_parts[*]}")
+
+if copy_to_clipboard "$result"; then
+  echo "Copied: $result" >&2
+else
+  echo "Result: $result" >&2
+  exit 1
+fi
