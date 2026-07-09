@@ -38,8 +38,10 @@ copy_to_clipboard() {
   elif command -v xsel &>/dev/null; then
     printf '%s' "$1" | xsel --clipboard --input
     printf '%s' "$1" | xsel --primary --input
+  elif command -v clip.exe &>/dev/null; then
+    printf '%s' "$1" | clip.exe
   else
-    echo "No clipboard tool found (pbcopy/wl-copy/xclip/xsel)." >&2
+    echo "No clipboard tool found (pbcopy/wl-copy/xclip/xsel/clip.exe)." >&2
     return 1
   fi
 }
