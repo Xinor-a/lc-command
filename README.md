@@ -1,6 +1,6 @@
-# 📋 lc.sh — line-copy
+# 📋 lc — line-copy
 
-Pipe any command's output into `lc.sh`, interactively pick one or more lines,
+Pipe any command's output into `lc`, interactively pick one or more lines,
 and copy them to your clipboard.
 
 ## ✨ Features
@@ -14,8 +14,8 @@ and copy them to your clipboard.
 ## 📦 Install
 
 ```bash
-chmod +x lc.sh
-cp lc.sh ~/.local/bin/lc   # or anywhere on your PATH
+chmod +x lc
+cp lc ~/.local/bin/lc   # or anywhere on your PATH
 ```
 
 On Ubuntu, make sure a clipboard tool is available:
