@@ -107,8 +107,8 @@ while true; do
     $'\x1b')  # escape sequence
       read -rsn2 seq
       case "$seq" in
-        '[A') ((cursor > 0)) && ((cursor--)) ;;          # up
-        '[B') ((cursor < total - 1)) && ((cursor++)) ;;  # down
+        '[A') [ "$cursor" -gt 0 ] && cursor=$((cursor - 1)) || true ;;   # up
+        '[B') [ "$cursor" -lt $((total - 1)) ] && cursor=$((cursor + 1)) || true ;;  # down
       esac
       ;;
     '')  # Enter
