@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# lc.sh - line-copy: select lines from piped input and copy to clipboard
-# Usage: some_command | lc.sh
+# lc - line-copy: select lines from piped input and copy to clipboard
+# Usage: some_command | lc
 #   ↑/↓  : navigate
 #   Enter : toggle select/deselect
 #   d     : done — copy selected lines to clipboard
@@ -29,7 +29,7 @@ done
 
 # --- Read stdin into array ---
 if [ -t 0 ]; then
-  echo "Usage: command | lc.sh" >&2
+  echo "Usage: command | lc" >&2
   exit 1
 fi
 
