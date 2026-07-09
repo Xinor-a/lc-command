@@ -8,6 +8,23 @@
 
 set -euo pipefail
 
+# --- Parse options ---
+quote_char=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --quote)
+      shift
+      case "${1:-}" in
+        single) quote_char="'" ;;
+        double) quote_char='"' ;;
+        *) echo "Usage: --quote single|double" >&2; exit 1 ;;
+      esac
+      shift
+      ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
+
 # --- Read stdin into array ---
 if [ -t 0 ]; then
   echo "Usage: command | lc.sh" >&2
@@ -141,7 +158,7 @@ for idx in "${selected_order[@]}"; do
   trimmed="${lines[$idx]}"
   trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"
   trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
-  [ -n "$trimmed" ] && result_parts+=("$trimmed")
+  [ -n "$trimmed" ] && result_parts+=("${quote_char}${trimmed}${quote_char}")
 done
 
 result=$(IFS=' '; echo "${result_parts[*]}")
