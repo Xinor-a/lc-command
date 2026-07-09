@@ -138,7 +138,10 @@ fi
 
 result_parts=()
 for idx in "${selected_order[@]}"; do
-  result_parts+=("${lines[$idx]}")
+  trimmed="${lines[$idx]}"
+  trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"
+  trimmed="${trimmed%"${trimmed##*[![:space:]]}"}"
+  [ -n "$trimmed" ] && result_parts+=("$trimmed")
 done
 
 result=$(IFS=' '; echo "${result_parts[*]}")
