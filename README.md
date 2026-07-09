@@ -60,7 +60,7 @@ git branch | lc --quote double
 | Key       | Action                                           |
 | --------- | ------------------------------------------------ |
 | `↑` / `↓` | Navigate                                         |
-| `Enter`   | Toggle select / deselect (✔)                     |
+| `Enter`   | Toggle select / deselect (numbered in selection order) |
 | `d`       | **Done** — copy selected lines and exit           |
 | `q`       | **Quit** — exit without copying                   |
 
