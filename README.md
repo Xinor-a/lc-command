@@ -8,7 +8,8 @@ and copy them to your clipboard.
 - Interactive TUI with arrow-key navigation
 - Multi-select with preserved selection order
 - Copies to both **CLIPBOARD** and **PRIMARY** selections (Linux)
-- Auto-detects clipboard tool: `xclip`, `xsel`, `wl-copy`, `pbcopy`
+- Auto-detects clipboard tool: `xclip`, `xsel`, `wl-copy`, `pbcopy`, `clip.exe`
+- Smart auto-quoting for items containing spaces or shell special characters
 
 ## 📦 Install
 
@@ -31,6 +32,29 @@ ls -1 | lc
 docker ps --format '{{.Names}}' | lc
 ```
 
+## ⚙️ Options
+
+### `--quote <mode>`
+
+Controls how each selected item is quoted when joined. Default is `auto`.
+
+| Mode     | Behavior                                                                |
+| -------- | ----------------------------------------------------------------------- |
+| `auto`   | Quote only items that need it; prefer `'single'`, fall back to `"double"` |
+| `single` | Wrap every item in single quotes                                        |
+| `double` | Wrap every item in double quotes                                        |
+| `none`   | No quoting                                                              |
+
+```bash
+# auto (default) — only "my file.txt" gets quoted
+ls -1 | lc
+# => 'my file.txt' main
+
+# force double quotes on everything
+git branch | lc --quote double
+# => "main" "develop"
+```
+
 ## ⌨️ Keys
 
 | Key       | Action                                           |
@@ -50,6 +74,7 @@ you selected them.
 | Ubuntu / X11   | `xclip` or `xsel`    |
 | Wayland        | `wl-copy`            |
 | macOS          | `pbcopy`             |
+| Git Bash (Win) | `clip.exe`           |
 
 ## 📄 License
 
