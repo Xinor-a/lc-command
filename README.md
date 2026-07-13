@@ -15,7 +15,7 @@ and copy them to your clipboard.
 
 ```bash
 chmod +x lc
-cp lc ~/.local/bin/lc   # or anywhere on your PATH
+cp lc ~/.local/bin/   # or anywhere on your PATH
 ```
 
 On Ubuntu, make sure a clipboard tool is available:
