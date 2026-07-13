@@ -164,9 +164,11 @@ while true; do
         '[B') [ "$cursor" -lt $((total - 1)) ] && cursor=$((cursor + 1)) || true ;;  # down
       esac
       ;;
-    '')  # Enter
+    ''|' ')  # Enter or Space
       toggle "$cursor"
       ;;
+    k) [ "$cursor" -gt 0 ] && cursor=$((cursor - 1)) || true ;;           # vim up
+    j) [ "$cursor" -lt $((total - 1)) ] && cursor=$((cursor + 1)) || true ;;  # vim down
     d|D)  # done
       break
       ;;
